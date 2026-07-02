@@ -166,8 +166,14 @@ def remove_background(
         _log("Initializing BiRefNet model...")
         try:
             import onnxruntime
-            _providers = ["CUDAExecutionProvider", "CoreMLExecutionProvider", "CPUExecutionProvider"]
+            _providers = [
+                "CUDAExecutionProvider",
+                "CoreMLExecutionProvider",
+                "DirectMLExecutionProvider",
+                "CPUExecutionProvider",
+            ]
             available = [p for p in _providers if p in onnxruntime.get_available_providers()]
+            _log(f"ONNX providers available: {available}")
             session = new_session("birefnet-portrait", providers=available)
         except Exception:
             session = new_session("birefnet-portrait")
@@ -187,7 +193,7 @@ def remove_background(
         return result_bgr, True
 
     except ImportError:
-        _log("rembg not installed -- pip install rembg[cpu]")
+        _log("rembg not installed -- pip install rembg")
         return image_bgr, False
     except Exception as e:
         _log(f"Background removal failed: {e}")

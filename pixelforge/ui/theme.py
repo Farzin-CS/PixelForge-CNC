@@ -19,22 +19,32 @@ COLORS = {
     "success": "#2ecc71",
     "warning": "#f39c12",
     "error": "#e74c3c",
+    "danger": "#e74c3c",
 }
 
+import sys
+
+if sys.platform == "darwin":
+    _FONT = "Helvetica"
+elif sys.platform == "linux":
+    _FONT = "sans-serif"
+else:
+    _FONT = "Segoe UI"
+
 FONTS = {
-    "title": ("Segoe UI", 24, "bold"),
-    "subtitle": ("Segoe UI", 10),
-    "section": ("Segoe UI", 11, "bold"),
-    "body": ("Segoe UI", 10),
-    "body_bold": ("Segoe UI", 10, "bold"),
-    "small": ("Segoe UI", 9),
-    "small_bold": ("Segoe UI", 9, "bold"),
-    "tiny": ("Segoe UI", 8),
-    "button": ("Segoe UI", 11, "bold"),
-    "button_small": ("Segoe UI", 9),
-    "run_button": ("Segoe UI", 13, "bold"),
-    "status": ("Segoe UI", 9),
-    "placeholder": ("Segoe UI", 22, "bold"),
+    "title": (_FONT, 24, "bold"),
+    "subtitle": (_FONT, 10),
+    "section": (_FONT, 11, "bold"),
+    "body": (_FONT, 10),
+    "body_bold": (_FONT, 10, "bold"),
+    "small": (_FONT, 9),
+    "small_bold": (_FONT, 9, "bold"),
+    "tiny": (_FONT, 8),
+    "button": (_FONT, 11, "bold"),
+    "button_small": (_FONT, 9),
+    "run_button": (_FONT, 13, "bold"),
+    "status": (_FONT, 9),
+    "placeholder": (_FONT, 22, "bold"),
 }
 
 def setup_theme() -> None:

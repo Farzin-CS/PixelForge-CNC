@@ -176,6 +176,11 @@ def render_engraving_preview(
     h, w = gray.shape
     depth_f = gray.astype(np.float64)
 
+    depth_uint8 = np.clip(depth_f, 0, 255).astype(np.uint8)
+    depth_f = cv2.edgePreservingFilter(
+        depth_uint8, flags=1, sigma_s=30, sigma_r=0.3
+    ).astype(np.float64)
+
     # Normalize depth: 0 = deepest cut, 1 = uncut surface
     depth_norm = depth_f / 255.0
 
@@ -287,7 +292,7 @@ def render_engraving_preview(
         result *= scan[:, :, np.newaxis]
 
     # Surface noise (micro roughness)
-    noise = np.random.normal(0, 1.5 * roughness, (h, w, 1))
+    noise = np.random.normal(0, 0.6 * roughness, (h, w, 1))
     result += noise
 
     result = np.clip(result, 0, 255).astype(np.uint8)

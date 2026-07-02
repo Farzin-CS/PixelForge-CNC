@@ -133,10 +133,10 @@ class PixelForgeApp:
         self._build_material_section(self._scroll)
         self._build_dimension_section(self._scroll)
         self._build_cnc_section(self._scroll)
-        self._build_strategy_section(self._scroll)
-        self._build_2d_section(self._scroll)
         self._build_image_section(self._scroll)
         self._build_smart_section(self._scroll)
+        self._build_2d_section(self._scroll)
+        self._build_strategy_section(self._scroll)
         self._build_action_section(self._scroll)
 
     def _build_right_panel(self, parent) -> None:
@@ -388,26 +388,61 @@ class PixelForgeApp:
             )
             rb.pack(anchor="w", pady=1)
             self._strategy_widgets.append((rb, label_key))
+
+        detail_row = ctk.CTkFrame(card, fg_color="transparent")
+        detail_row.pack(fill="x", pady=(6, 0))
+        self._detail_label_3d = ctk.CTkLabel(
+            detail_row, text=t(self.lang, "detail_level"),
+            font=FONTS["body"], text_color=COLORS["text"],
+        )
+        self._detail_label_3d.pack(side="left")
+        self._detail_slider_3d = ctk.CTkSlider(
+            detail_row, from_=0.0, to=1.0, variable=self._detail_level_var,
+            progress_color=COLORS["accent"], button_color=COLORS["accent"],
+            button_hover_color=COLORS["accent_hover"], width=160,
+        )
+        self._detail_slider_3d.pack(side="left", padx=(8, 4), fill="x", expand=True)
+        self._detail_val_label_3d = ctk.CTkLabel(
+            detail_row, text="0.50", font=FONTS["small_bold"],
+            text_color=COLORS["text_bright"], width=36, anchor="e",
+        )
+        self._detail_val_label_3d.pack(side="left")
+        self._detail_slider_3d.configure(command=self._on_detail_change_3d)
+
         self._3d_widgets.append((card.master, {"fill": "x", "padx": 4, "pady": (0, 4)}))
+        self._3d_widgets.append((detail_row, {"fill": "x", "pady": (0, 4)}))
 
     def _build_2d_section(self, parent) -> None:
         card = self._make_card(parent)
         self._sec_2d_title = self._make_section_title(card, t(self.lang, "sec_2d"))
 
-        self._line_width_entry = CNCEntry(card, t(self.lang, "line_width"), value=0.2)
-        self._line_width_entry.pack(fill="x", pady=(0, 4))
-
-        self._simplify_entry = CNCEntry(card, t(self.lang, "simplify"), value=0.5)
-        self._simplify_entry.pack(fill="x", pady=(0, 4))
-
-        self._min_area_entry = CNCEntry(card, t(self.lang, "min_area"), value=1.0)
-        self._min_area_entry.pack(fill="x", pady=(0, 4))
-
         self._passes_entry = CNCEntry(card, t(self.lang, "passes"), value=1)
         self._passes_entry.pack(fill="x", pady=(0, 4))
 
+        detail_row = ctk.CTkFrame(card, fg_color="transparent")
+        detail_row.pack(fill="x", pady=(2, 0))
+        self._detail_label = ctk.CTkLabel(
+            detail_row, text=t(self.lang, "detail_level"),
+            font=FONTS["body"], text_color=COLORS["text"],
+        )
+        self._detail_label.pack(side="left")
+        self._detail_level_var = ctk.DoubleVar(value=0.5)
+        self._detail_slider = ctk.CTkSlider(
+            detail_row, from_=0.0, to=1.0, variable=self._detail_level_var,
+            progress_color=COLORS["accent"], button_color=COLORS["accent"],
+            button_hover_color=COLORS["accent_hover"], width=160,
+        )
+        self._detail_slider.pack(side="left", padx=(8, 4), fill="x", expand=True)
+        self._detail_val_label = ctk.CTkLabel(
+            detail_row, text="0.50", font=FONTS["small_bold"],
+            text_color=COLORS["text_bright"], width=36, anchor="e",
+        )
+        self._detail_val_label.pack(side="left")
+        self._detail_slider.configure(command=self._on_detail_change)
+
         self._2d_widgets.append((card.master, {"fill": "x", "padx": 4, "pady": (0, 4)}))
         card.master.pack_forget()
+        self._2d_widgets.append((detail_row, {"fill": "x", "pady": (0, 4)}))
 
     def _build_image_section(self, parent) -> None:
         card = self._make_card(parent)
@@ -502,15 +537,32 @@ class PixelForgeApp:
         )
         self._apply_suggestions_btn.pack(fill="x", pady=(8, 0))
 
+    def _on_detail_change(self, value: float) -> None:
+        self._detail_val_label.configure(text=f"{value:.2f}")
+
+    def _on_detail_change_3d(self, value: float) -> None:
+        self._detail_val_label_3d.configure(text=f"{value:.2f}")
+        self._detail_val_label.configure(text=f"{value:.2f}")
+
     def _build_action_section(self, parent) -> None:
         card = self._make_card(parent)
 
+        btn_row = ctk.CTkFrame(card, fg_color="transparent")
+        btn_row.pack(fill="x", pady=(0, 8))
+
         self._run_btn = ctk.CTkButton(
-            card, text=t(self.lang, "run"), font=FONTS["run_button"],
+            btn_row, text=t(self.lang, "run"), font=FONTS["run_button"],
             fg_color=COLORS["accent"], hover_color=COLORS["accent_hover"],
             height=48, command=self._on_run,
         )
-        self._run_btn.pack(fill="x", pady=(0, 8))
+        self._run_btn.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+        self._cancel_btn = ctk.CTkButton(
+            btn_row, text=t(self.lang, "cancel"), font=FONTS["button"],
+            fg_color=COLORS["bg_mid"], hover_color=COLORS["danger"],
+            height=48, command=self._on_cancel, state="disabled",
+        )
+        self._cancel_btn.pack(side="left", padx=(4, 0))
 
         btn_row = ctk.CTkFrame(card, fg_color="transparent")
         btn_row.pack(fill="x")
@@ -597,14 +649,12 @@ class PixelForgeApp:
             self._gamma_var.set(s["gamma"])
         if "smart_settings" in s:
             self._smart_var.set(s["smart_settings"])
-        if "line_width_mm" in s:
-            self._line_width_entry.set(s["line_width_mm"])
-        if "contour_simplify_epsilon" in s:
-            self._simplify_entry.set(s["contour_simplify_epsilon"])
-        if "min_contour_area" in s:
-            self._min_area_entry.set(s["min_contour_area"])
         if "contour_passes" in s:
             self._passes_entry.set(s["contour_passes"])
+        if "detail_level" in s:
+            self._detail_level_var.set(s["detail_level"])
+            self._detail_val_label.configure(text=f"{s['detail_level']:.2f}")
+            self._detail_val_label_3d.configure(text=f"{s['detail_level']:.2f}")
 
     def _collect_settings(self) -> dict[str, Any]:
         try:
@@ -638,10 +688,8 @@ class PixelForgeApp:
         self._settings["invert"] = self._invert_var.get()
         self._settings["gamma"] = self._gamma_var.get()
         self._settings["smart_settings"] = self._smart_var.get()
-        self._settings["line_width_mm"] = float(self._line_width_entry.get())
-        self._settings["contour_simplify_epsilon"] = float(self._simplify_entry.get())
-        self._settings["min_contour_area"] = float(self._min_area_entry.get())
         self._settings["contour_passes"] = int(float(self._passes_entry.get()))
+        self._settings["detail_level"] = self._detail_level_var.get()
         return self._settings
 
     def _on_close(self) -> None:
@@ -691,7 +739,11 @@ class PixelForgeApp:
         self._sec_smart_title.configure(text=t(L, "sec_smart"))
         self._sec_eng_mode_title.configure(text=t(L, "sec_engraving_mode"))
         self._sec_2d_title.configure(text=t(L, "sec_2d"))
+        self._detail_label.configure(text=t(L, "detail_level"))
+        self._detail_label_3d.configure(text=t(L, "detail_level"))
 
+        self._run_btn.configure(text=t(L, "run"))
+        self._cancel_btn.configure(text=t(L, "cancel"))
         self._browse_btn.configure(text=t(L, "browse"))
         for rb, desc_lbl, name_key, desc_key in self._mode_widgets:
             rb.configure(text=t(L, name_key))
@@ -823,11 +875,8 @@ class PixelForgeApp:
             "start_z": 0.3,
             "ramp_angle": float(self._ramp_entry.get()),
             "carving_strategy": self._strategy_var.get(),
-            "contour_simplify_epsilon": float(self._simplify_entry.get()),
-            "min_contour_area": float(self._min_area_entry.get()),
-            "line_width_mm": float(self._line_width_entry.get()),
             "contour_passes": int(float(self._passes_entry.get())),
-            "lead_in_out": True,
+            "detail_level": self._detail_level_var.get(),
         }
 
     def apply_config(self, config: dict[str, Any]) -> None:
@@ -842,6 +891,7 @@ class PixelForgeApp:
             ("contrast_enhance", self._contrast_var), ("sharpen_edges", self._sharpen_var),
             ("bilateral_filter", self._smooth_var), ("gamma", self._gamma_var),
             ("smart_settings", self._smart_var),
+            ("detail_level", self._detail_level_var),
         ]:
             if key in config:
                 try:
@@ -865,11 +915,13 @@ class PixelForgeApp:
 
     def start_processing(self) -> None:
         self._run_btn.configure(state="disabled", text=t(self.lang, "processing"))
+        self._cancel_btn.configure(state="normal")
         self._status_var.set(t(self.lang, "processing_msg"))
         self._progress_bar.set(0)
 
     def stop_processing(self) -> None:
         self._run_btn.configure(state="normal", text=t(self.lang, "run"))
+        self._cancel_btn.configure(state="disabled")
 
     def update_progress(self, percent: float, message: str) -> None:
         self._progress_bar.set(min(percent, 1.0))
@@ -902,6 +954,7 @@ class PixelForgeApp:
 
         cfg = result.config
         used_settings = {
+            "engraving_mode": cfg.get("engraving_mode", "--"),
             "mode": cfg.get("mode", "--"),
             "material": cfg.get("material", "--"),
             "max_depth": cfg.get("max_depth", "--"),
@@ -942,6 +995,10 @@ class PixelForgeApp:
     def _on_run(self) -> None:
         if self._controller:
             self._controller.on_run_conversion()
+
+    def _on_cancel(self) -> None:
+        if self._controller:
+            self._controller.on_cancel_conversion()
 
     def _on_apply_suggestions(self) -> None:
         if self._controller:

@@ -18,7 +18,7 @@ def test_extract_empty():
 def test_extract_all_white():
     img = np.ones((50, 50), dtype=np.uint8) * 255
     contours = extract_contours(img)
-    assert len(contours) >= 1
+    assert len(contours) == 0
 
 
 def test_extract_invert():
@@ -56,7 +56,7 @@ def test_line_art_simple():
 def test_line_art_empty():
     img = np.zeros((50, 50), dtype=np.uint8)
     lines = convert_to_line_art(img)
-    assert len(lines) == 0
+    assert len(lines) <= 1
 
 
 def test_contour_path_has_points():

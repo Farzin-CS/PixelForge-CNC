@@ -79,6 +79,7 @@ class SuccessDialog(ctk.CTkToplevel):
             us_title.pack(anchor="w", padx=12, pady=(6, 2))
 
             us_items = [
+                (t(lang, "used_eng_mode"), used_settings.get("engraving_mode", "--")),
                 (t(lang, "used_mode"), used_settings.get("mode", "--")),
                 (t(lang, "used_material"), used_settings.get("material", "--")),
                 (t(lang, "used_depth"), used_settings.get("max_depth", "--")),

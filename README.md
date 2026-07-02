@@ -23,7 +23,7 @@
 
 ## Why PixelForge CNC?
 
-Most image-to-gcode tools produce **flat cartoon outlines** with no depth or shading. PixelForge CNC uses **variable-depth raster engraving** with a **real-time metallic simulation** so you see the final result before running the machine.
+Most image-to-gcode tools produce **flat cartoon outlines** with no depth or shading. PixelForge CNC uses **variable-depth raster engraving** with a **real-time metallic simulation** so you see the final result before running the machine. 2D modes use the same raster engine at coarse settings for a blocky pixel-art look.
 
 | Traditional Tools | PixelForge CNC |
 |---|---|
@@ -43,7 +43,9 @@ Most image-to-gcode tools produce **flat cartoon outlines** with no depth or sha
 - **4 Processing Modes** -- Portrait (face crop), Full image, Center crop, Fit to dimensions
 - **Variable-depth G-code** -- Pixel brightness maps directly to engraving depth
 - **TAP format output** -- Compatible with Mach3, LinuxCNC, GRBL, Fanuc, Siemens
-- **AI background removal** -- Background stays uncut (stays shiny)
+- **AI background removal** -- GPU-accelerated (CUDA / CoreML / DirectML auto-detected) — background stays uncut
+- **Detail Level slider** -- Controls coarseness from binary silhouette to smooth 8-level raster
+- **2 Engraving Modes** -- 3D variable-depth raster + 2D coarse raster (same engine, low detail)
 - **Rapid traversal optimization** -- G0 rapid moves over zero-depth areas
 - **Z-axis ramping** -- Angled tool entry to prevent bit breakage
 
@@ -84,6 +86,7 @@ Most image-to-gcode tools produce **flat cartoon outlines** with no depth or sha
 - **Dark-themed GUI** -- Modern CustomTkinter interface for extended use
 - **Config save/load** -- Save presets for different projects and materials
 - **Keyboard shortcuts** -- Ctrl+O, Ctrl+P, Ctrl+S
+- **Cancel button** -- Abort processing at any time during conversion
 - **Non-blocking processing** -- Background threading keeps UI responsive during conversion
 
 ---
@@ -119,7 +122,8 @@ python build_exe.py
 
 The executable will be created at `dist/PixelForge CNC.exe`. Share this single file with anyone -- no Python installation needed.
 
-> First run downloads the AI background removal model (~200 MB). Only happens once.
+> First run downloads the AI background removal model (~200 MB). Only happens once.\
+> GPU acceleration is auto-detected (CUDA > CoreML > DirectML > CPU). No manual config needed.
 
 ---
 
@@ -153,19 +157,30 @@ Click **Browse** or press `Ctrl+O`. Supports JPG, PNG, BMP, TIFF, WebP.
 | Center Crop | Patterns, art -- square crop from center |
 | Fit to Size | Landscapes -- fits to output dimensions |
 
-### 3. Choose Material
+### 3. Choose Engraving Mode
+
+Select **Raster 3D** for variable-depth engraving or **Contour/Line Art** for 2D coarse raster. The 2D mode uses the same raster engine with low detail for a flat blocky look.
+
+### 4. Choose Material
 
 Select from the material dropdown. CNC parameters auto-populate. Override any value if needed.
 
-### 4. Configure Dimensions
+### 5. Configure Dimensions
 
 Set the physical engraving area (width x height in mm) and line spacing.
 
-### 5. Select Carving Strategy
+### 6. Set Detail Level
+
+The **Detail Level** slider (0.0–1.0) controls coarseness:
+- **0.0** — Binary (2-level), very coarse spacing, pixelated → fast, blocky result
+- **0.5** — 4 levels, moderate coarseness
+- **1.0** — Smooth 8-level raster, finest detail
+
+### 7. Select Carving Strategy (3D only)
 
 Choose between Zig-Zag (boustrophedon), One-Way Climb, or One-Way Conventional milling paths.
 
-### 6. Run Conversion
+### 8. Run Conversion
 
 Click **RUN CONVERSION** or press `Ctrl+P`. Three preview tabs update:
 
@@ -220,29 +235,24 @@ Input Image
 Preprocessing (portrait / full / center / fit)
     |
     v
-AI Background Removal (optional)
+AI Background Removal (GPU-accelerated, optional)
     |
     v
 4-Stage Enhancement (CLAHE, Bilateral, Unsharp, Gamma)
     |
     v
-Resize to Engraving Resolution (Lanczos4)
-    |
-    v
-+---> Engraving Simulation (metallic surface rendering)
++---> [3D Mode] Resize & generate variable-depth G-code
 |         |
-|         v
-|     Preview Tab (realistic engraved appearance)
+|         +---> Engraving Simulation (metallic preview)
+|         +---> G-code with Z ramping, strategies, rapids
 |
-+---> G-code Generation
++---> [2D Mode] Posterize + downscale + coarse spacing
           |
-          +---> Vectorized segment detection
-          +---> Rapid traversal (G0) over zero-depth areas
-          +---> Z-axis ramping for safe tool entry
-          +---> Strategy selection (zigzag / climb / conventional)
-          |
-          v
-      .tap file for CNC machine
+          +---> 2D contour preview (bone colormap)
+          +---> Raster G-code (same 3D engine, coarse settings)
+                  |
+                  v
+            .tap file for CNC machine
 ```
 
 ---

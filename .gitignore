@@ -29,6 +29,12 @@ build/
 *.spec
 *.exe
 
+# Local user settings
+settings.json
+
+# Local utility scripts
+update.py
+
 # Tests
 tests/__pycache__/
 .coverage

@@ -55,7 +55,7 @@ def generate_depth_map_opencv(
                                        sigmaSpace=edge_preserve)
 
     # Step 2: CLAHE -- local contrast equalization removes lighting gradients
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(12, 12))
     equalized = clahe.apply(filtered)
 
     # Step 3: Invert so dark = deep cut (lower value = deeper)

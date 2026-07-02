@@ -120,6 +120,11 @@ class AppController:
         self.view.start_processing()
         self._poll_progress()
 
+    def on_cancel_conversion(self) -> None:
+        if self.worker:
+            self.worker.cancel()
+            self.view.set_status("Cancelling...")
+
     def _poll_progress(self) -> None:
         if not self.worker:
             return
@@ -130,6 +135,11 @@ class AppController:
                 self.view.update_progress(progress.percent, progress.message)
             except Exception:
                 break
+
+        if self.worker.is_cancelled or (self.worker.error and "Cancelled" in str(self.worker.error)):
+            self.view.stop_processing()
+            self.worker = None
+            return
 
         if self.worker.is_alive:
             self.view.root.after(50, self._poll_progress)

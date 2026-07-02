@@ -42,14 +42,22 @@ def generate_gcode_2d(
     if progress_callback:
         progress_callback(0.0, f"Generating {len(contours)} contour paths...")
 
-    total_paths = len(contours) * config.contour_passes
+    sorted_contours = sorted(
+        contours,
+        key=lambda c: _contour_bounds(c),
+    )
+
+    total_paths = len(sorted_contours) * config.contour_passes
     path_idx = 0
+
+    lead_len = 0.5
+    lead_feed = config.plunge_rate * 0.5
 
     for pass_num in range(config.contour_passes):
         depth_fraction = (pass_num + 1) / max(config.contour_passes, 1)
         current_depth = config.max_depth * depth_fraction
 
-        for contour in contours:
+        for contour in sorted_contours:
             if len(contour.points) < 2:
                 continue
 
@@ -62,13 +70,24 @@ def generate_gcode_2d(
 
             mm_points = contour.points
             first_x, first_y = mm_points[0]
+            dx0 = mm_points[1][0] - mm_points[0][0] if len(mm_points) > 1 else 0
+            dy0 = mm_points[1][1] - mm_points[0][1] if len(mm_points) > 1 else 0
+            ln = math.hypot(dx0, dy0)
+            if ln > 1e-6:
+                lead_x = first_x + (dx0 / ln) * lead_len
+                lead_y = first_y + (dy0 / ln) * lead_len
+            else:
+                lead_x, lead_y = first_x, first_y
 
             out.append(f"G0 Z{config.safe_z:.3f}")
-            out.append(f"G0 X{first_x:.3f} Y{first_y:.3f}")
+            out.append(f"G0 X{lead_x:.3f} Y{lead_y:.3f}")
             out.append(f"G0 Z{config.start_z:.3f}")
             stats.rapid_moves += 3
 
             out.append(f"G1 Z{current_depth:.3f} F{config.plunge_rate:.0f}")
+            stats.cutting_moves += 1
+
+            out.append(f"G1 X{first_x:.3f} Y{first_y:.3f} F{lead_feed:.0f}")
             stats.cutting_moves += 1
 
             for i, (px, py) in enumerate(mm_points):
@@ -108,3 +127,11 @@ def generate_gcode_2d(
         progress_callback(1.0, f"G-code complete: {stats.total_lines} lines")
 
     return "\n".join(out), stats
+
+
+def _contour_bounds(c: ContourPath) -> tuple[float, float]:
+    if not c.points:
+        return (0.0, 0.0)
+    xs = [p[0] for p in c.points]
+    ys = [p[1] for p in c.points]
+    return (min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0

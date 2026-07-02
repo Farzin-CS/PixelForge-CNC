@@ -76,6 +76,9 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     # Scroll speed multiplier
     "scroll_speed_multiplier": 3,
 
+    # Detail level: 0.0 = low detail (simpler), 1.0 = high detail (more sensitive)
+    "detail_level": 0.5,
+
     # Last opened directory
     "last_directory": "",
 }
@@ -176,6 +179,7 @@ def settings_to_config(settings: dict[str, Any]) -> dict[str, Any]:
         "invert": settings.get("invert", False),
         "gamma": settings.get("gamma", 0.80),
         "smart_settings": settings.get("smart_settings", True),
+        "detail_level": settings.get("detail_level", 0.5),
         "skip_threshold": 0.005,
         "start_z": 0.3,
     }
@@ -195,7 +199,7 @@ def config_to_settings(config: dict[str, Any], settings: dict[str, Any]) -> dict
                 "max_depth", "safe_z", "feed_rate", "spindle_rpm", "plunge_rate",
                 "ramp_angle", "carving_strategy", "remove_background",
                 "contrast_enhance", "sharpen_edges", "bilateral_filter",
-                "invert", "gamma", "smart_settings"]:
+                 "invert", "gamma", "smart_settings", "detail_level"]:
         if key in config:
             settings[key] = config[key]
     return settings
