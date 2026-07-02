@@ -1,0 +1,22 @@
+name: Build EXE
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install deps
+        run: pip install pyinstaller -r requirements.txt
+      - name: Build
+        run: python build_exe.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PixelForge-CNC-EXE
+          path: dist/PixelForge CNC.exe

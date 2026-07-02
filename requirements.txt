@@ -1,0 +1,13 @@
+# PixelForge CNC -- Requirements
+# Install: pip install -r requirements.txt
+
+# Core image processing
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Modern UI framework
+customtkinter>=5.2.0
+
+# AI background removal (ONNX-based, no PyTorch needed)
+rembg[cpu]>=2.0.50

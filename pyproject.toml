@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixelforge-cnc"
+version = "4.1.0"
+description = "Professional Image to G-code Converter — 3D Raster + 2D Contour/Line Art Engraving"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["cnc", "gcode", "engraving", "image-processing", "engraver"]
+
+dependencies = [
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "Pillow>=10.0.0",
+    "customtkinter>=5.2.0",
+    "rembg[cpu]>=2.0.50",
+]
+
+[project.urls]
+Homepage = "https://github.com/Farzin-CS/PixelForge-CNC"
+Repository = "https://github.com/Farzin-CS/PixelForge-CNC"
+
+[project.scripts]
+pixelforge-cnc = "pixelforge.ui.app:main"
+
+[tool.setuptools]
+packages = ["pixelforge", "pixelforge.engine", "pixelforge.ui"]
+
+[tool.setuptools.package-data]
+pixelforge = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
